@@ -1,6 +1,8 @@
 import numpy as np
 import sklearn
 from sklearn.feature_extraction.text import TfidfVectorizer
+from nesta.packages.nlp_utils import preprocess
+
 
 class Tfidf():
     """Calculates the TF-IDF weighting of a corpus."""
