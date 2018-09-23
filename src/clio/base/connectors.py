@@ -1,2 +1,0 @@
-class SqliteConnector:
-    pass
