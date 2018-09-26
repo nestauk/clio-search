@@ -2,6 +2,7 @@ import os
 import datetime
 from clio.base.connectors.sqlite_connector import SqliteConnector
 import unittest
+from collections import Counter
 
 
 docs = {0: 'This is some sample text', 1: 'This is another part of verse'}
@@ -17,8 +18,8 @@ synonyms = {0: ((0, False),    # sample
                 (2, False)),   # verse
             2: ((3, False),)}  # another
 
-ngrams = {0: ((4, 0),   # part
-              (5, 0))}  # of
+ngrams = {-1: ((4, 0),   # part
+               (5, 1))}  # of
 
 terms = {0: "sample",
          1: "text",
@@ -35,13 +36,24 @@ class SqliteConnectorTest(unittest.TestCase):
         ts = str(_ts).split(".")[0]
         self.db_name = 'test_{}'.format(ts)
         self.conn = SqliteConnector(self.db_name)
+        self.conn.write(docs, processed_docs, synonyms,
+                        ngrams, terms, True)
 
     def tearDown(self):
         os.remove('{}.db'.format(self.db_name))
 
-    def test_write(self):
+    def test_find_ngrams(self):
         ''''''
-        self.conn.write(docs, processed_docs, synonyms, ngrams, terms, True)
+        raw_term_ids = self.conn.terms_to_ids(["another", "part", "of", "verse",  "part", "of"])
+        print(raw_term_ids)
+        term_ids = self.conn.find_and_replace_ngrams(raw_term_ids)
+        print(term_ids)
+        docs = Counter()
+        for info in term_ids:
+            docs_ = self.conn.find_docs_by_term(**info)
+            docs += docs_
+            print(info, "-->", docs_)
+        print(docs)
 
 
 if __name__ == '__main__':
